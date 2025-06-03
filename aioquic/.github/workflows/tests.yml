@@ -1,0 +1,169 @@
+name: tests
+
+on: [push, pull_request]
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.9
+      - name: Build documentation
+        env:
+          READTHEDOCS: "True"
+        run: |
+          pip install . -r requirements/doc.txt
+          make -C docs html SPHINXOPTS=-W
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.9
+      - name: Install packages
+        run: pip install check-manifest mypy ruff types-certifi types-pyopenssl
+      - name: Run linters
+        run: |
+          ruff check .
+          ruff format --check --diff .
+          mypy examples src tests
+          check-manifest
+
+  codespell:
+    name: Check for spelling errors
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: codespell-project/actions-codespell@v2
+        with:
+          check_filenames: true
+          check_hidden: false
+          ignore_words_list: assertIn,quicly
+          skip: "*.bin"
+
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python:
+          - "3.13"
+          - "3.12"
+          - "3.11"
+          - "3.10"
+          - "3.9"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install OpenSSL and disable firewall
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew install openssl
+          echo "AIOQUIC_SKIP_TESTS=chacha20" >> $GITHUB_ENV
+          echo "CFLAGS=-I$(brew --prefix openssl)/include" >> $GITHUB_ENV
+          echo "LDFLAGS=-L$(brew --prefix openssl)/lib" >> $GITHUB_ENV
+          sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setglobalstate off
+      - name: Install OpenSSL
+        if: matrix.os == 'windows-latest'
+        run: |
+          choco install openssl --no-progress
+          echo "INCLUDE=C:\Progra~1\OpenSSL\include" >> $GITHUB_ENV
+          echo "LIB=C:\Progra~1\OpenSSL\lib" >> $GITHUB_ENV
+        shell: bash
+      - name: Run tests
+        run: |
+          python -m pip install -U pip setuptools wheel
+          pip install .[dev]
+          coverage run -m unittest discover -v
+          coverage xml
+        shell: bash
+      - name: Upload coverage report
+        if: matrix.python != 'pypy3'
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  package-source:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.9
+      - name: Build source package
+        run: |
+          pip install -U build
+          python -m build --sdist
+      - name: Upload source package
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-source
+          path: dist/
+
+  package-wheel:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            arch: arm64
+          - os: macos-latest
+            arch: x86_64
+          - os: ubuntu-24.04-arm
+            arch: aarch64
+          - os: ubuntu-latest
+            arch: i686
+          - os: ubuntu-latest
+            arch: x86_64
+          - os: windows-latest
+            arch: AMD64
+          - os: windows-latest
+            arch: x86
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+      - name: Build wheels
+        env:
+          CIBW_ARCHS: ${{ matrix.arch }}
+          CIBW_BEFORE_BUILD: python scripts/fetch-vendor.py /tmp/vendor
+          CIBW_BEFORE_BUILD_WINDOWS: python scripts\fetch-vendor.py C:\cibw\vendor
+          CIBW_ENVIRONMENT: AIOQUIC_SKIP_TESTS=ipv6,loss CFLAGS=-I/tmp/vendor/include LDFLAGS=-L/tmp/vendor/lib
+          CIBW_ENVIRONMENT_WINDOWS: AIOQUIC_SKIP_TESTS=ipv6,loss INCLUDE=C:\\cibw\\vendor\\include LIB=C:\\cibw\\vendor\\lib
+          CIBW_SKIP: 'pp*'
+          CIBW_TEST_COMMAND: python -m unittest discover -t {project} -s {project}/tests
+          # There are no binary wheels for cryptography on 32-bit platforms.
+          CIBW_TEST_SKIP: "*-{manylinux_i686,musllinux_i686,win32}"
+        run: |
+          pip install cibuildwheel
+          cibuildwheel --output-dir dist
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-wheel-${{ matrix.os }}-${{ matrix.arch }}
+          path: dist/
+
+  publish:
+    runs-on: ubuntu-latest
+    needs: [lint, test, package-source, package-wheel]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+          path: dist/
+      - name: Publish to PyPI
+        if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_TOKEN }}
