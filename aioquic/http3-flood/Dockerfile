@@ -50,10 +50,8 @@ RUN make install
 
 FROM ubuntu:20.04 as executor
 
-# Use alternate tmp directory to avoid apt issues in some containers
 ENV TMPDIR=/var/tmp
 
-# Install runtime dependencies and tools
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     ca-certificates \
     tcpdump \
@@ -61,16 +59,17 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     libpsl5 \
  && rm -rf /var/lib/apt/lists/*
 
-# Copy required libraries and binaries from build stage
-COPY --from=build-curl /etc/ld.so.conf.d/libc.conf /etc/ld.so.conf.d/libcurl.conf
+# Copy shared libraries and binaries
 COPY --from=build-curl /usr/local/lib/libcurl.so.4 /usr/local/lib/libcurl.so.4
-COPY --from=build-curl /etc/ld.so.conf.d/libc.conf /etc/ld.so.conf.d/libquiche.conf
 COPY --from=build-curl /root/quiche/target/release/libquiche.so /usr/local/lib/libquiche.so
 COPY --from=build-curl /usr/local/bin/curl /usr/local/bin/curl
 
-# Copy your attack script
-COPY --from=fetch-curl /root/http3-flood.sh /root/http3-flood.sh
+# Make sure system knows about the libraries
+RUN ldconfig
 
-# Default to bash
+# Copy the attack script
+COPY --from=fetch-curl /root/http3-flood.sh /root/http3-flood.sh
+RUN chmod +x /root/http3-flood.sh
+
 CMD ["bash"]
 
