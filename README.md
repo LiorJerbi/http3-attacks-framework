@@ -16,20 +16,19 @@ Alternatively, you can run the Caddy server **locally** on your own machine.
 
 ## 🔧 Installation
 
-## Clone this repo
+### Clone this repo
 git clone https://github.com/LiorJerbi/HTTP3-Att-FinProj
 cd final_proj/aioquic
 
-## Install required system packages
+### Install required system packages
 sudo apt update
 sudo apt install -y libssl-dev python3-pip
 
-## Install Python requirements
+### Install Python requirements
 pip install -e .
 pip install asgiref dnslib httpbin starlette wsproto
 
-
-## 🔧 Setting Up the Caddy Server
+### 🔧 Setting Up the Caddy Server
 
 All attacks in this project require a running HTTP/3-compatible server.  
 We used [Caddy](https://caddyserver.com) for this purpose, both locally and in the Oracle Cloud.
