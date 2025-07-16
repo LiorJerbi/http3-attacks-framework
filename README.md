@@ -1,5 +1,5 @@
 # HTTP3-Att-FinProj
-“This project is based on and extends the work in [efchatz/HTTP3-attacks](https://github.com/efchatz/HTTP3-attacks)”
+This project is based on and extends the work in [efchatz/HTTP3-attacks](https://github.com/efchatz/HTTP3-attacks)
 
 ## 🌐 Target Server Setup (Oracle Cloud + Caddy)
 
