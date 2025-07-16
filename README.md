@@ -17,17 +17,20 @@ Alternatively, you can run the Caddy server **locally** on your own machine.
 ## 🔧 Installation
 
 ### Clone this repo
+```bash
 git clone https://github.com/LiorJerbi/HTTP3-Att-FinProj
 cd final_proj/aioquic
-
+```
 ### Install required system packages
+```bash
 sudo apt update
 sudo apt install -y libssl-dev python3-pip
-
+```
 ### Install Python requirements
+```bash
 pip install -e .
 pip install asgiref dnslib httpbin starlette wsproto
-
+```
 ### 🔧 Setting Up the Caddy Server
 
 All attacks in this project require a running HTTP/3-compatible server.  
