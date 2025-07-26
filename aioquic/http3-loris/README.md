@@ -6,19 +6,18 @@ This script performs an HTTP/3 Loris-style attack by sending requests with slow 
 
 ## 🔧 Prerequisites
 
-- Ensure the **Caddy server** is running with HTTP/3 support.  
-  If not yet set up, refer to the root [`caddysetup`](../docs/CaddySetup.md) for installation and configuration instructions.
+- Ensure the **Caddy server** is running with HTTP/3 support.
+  See the root [`CaddySetup.md`](../docs/CaddySetup.md) for setup instructions.
 
-- Confirm the `MAX_TABLE_CAPACITY` parameter in: aioquic/src/h3/connection.py
-  is set to the default value `4096`.
+- Verify that `MAX_TABLE_CAPACITY` in `aioquic/src/aioquic/h3/connection.py` (line 370) is set to the default value `4096`.
 
-- Customize the attack script URL in `http3-loris.sh`.  
+- Edit the attack script `http3-loris.sh` and replace the placeholder with  your server's address: 
 ```bash
 sudo seq 1 40 | timeout 5s xargs -n1 -P40 python3 examples/http3_client.py https://<your-server-ip> -d $x
 ```
 
 ## ✅ Optional:
-Modify and run the included timer_script.sh in another terminal to monitor server response times during the attack
+Modify and run the included timer_script.sh in another terminal to monitor server response behavior during the attack.
 
 ## 🚀 How to Run
 

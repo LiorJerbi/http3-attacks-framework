@@ -1,26 +1,24 @@
 # HTTP3-Stream Attack
 
 This script performs an HTTP/3 stream-based attack using the `aioquic` library.  
-It abuses stream-level features by sending continuous or malformed data on new streams.
+It abuses stream-level features by opening multiple streams with continuous or malformed data.
 
 ---
 
 ## 🔧 Prerequisites
 
 - Ensure the **Caddy server** is running with HTTP/3 support.  
-  If not yet set up, refer to the root [`caddysetup`](../docs/CaddySetup.md) for installation and configuration instructions.
+  See the root [`CaddySetup.md`](../docs/CaddySetup.md) for setup instructions.
 
-- Before running this attack, you **must lower** `MAX_TABLE_CAPACITY` parameter.  
-  Edit the 370 line in: aioquic/src/aioquic/h3/connection.py
-  to `16`.
+- Before running this attack, **modify** the `MAX_TABLE_CAPACITY` in `aioquic/src/aioquic/h3/connection.py` (line 370) and set it to `16`.
 
-- Customize the attack script URL in `http3-loris.sh`.  
+- Edit the attack script `http3-stream.sh` and replace the placeholder with your server's address:
 ```bash
 sudo seq 1 100 | timeout 5s xargs -n1 -P100 python3 examples/http3_client.py https://<your-server-ip>
 ```
 
 ## ✅ Optional:
-Modify and run the included timer_script.sh in another terminal to monitor server response times during the attack
+Modify and run the included timer_script.sh in another terminal to monitor server response behavior during the attack.
 
 ## 🚀 How to Run
 
