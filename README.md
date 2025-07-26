@@ -36,7 +36,7 @@ sudo apt install -y libssl-dev python3-pip
 
 ### 3. Install Python requirements
 ```bash
-pip install -e .
+pip install .
 pip install asgiref dnslib httpbin starlette wsproto
 ```
 ---

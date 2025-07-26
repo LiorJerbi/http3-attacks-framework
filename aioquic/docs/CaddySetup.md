@@ -34,40 +34,45 @@ Then continue:
 sudo apt update
 sudo apt install caddy
 ```
+---
 
 ## 🧾 Step 2: Configure the Caddyfile
 
-# Create a directory for certs (if not exists)
+### Create a directory for certs (if not exists)
 ```bash
 sudo mkdir -p /etc/caddy
 ```
-# Generate a self-signed certificate
+### Generate a self-signed certificate
 ```bash
-openssl req -x509 -newkey rsa:4096 -nodes -keyout /etc/caddy/self_signed.key -out /etc/caddy/self_signed.crt -days 365 -subj "/CN=localhost"
+sudo openssl req -x509 -newkey rsa:4096 -nodes -keyout /etc/caddy/self_signed.key -out /etc/caddy/self_signed.crt -days 365 -subj "/CN=localhost"
 ```
-# Edit the Caddyfile
+### Edit the Caddyfile
 ```bash
 sudo nano /etc/caddy/Caddyfile
 ```
 
-# Paste this into the file:
+### Paste this into the file:
 ```bash
 :443 {
     tls /etc/caddy/self_signed.crt /etc/caddy/self_signed.key
     respond "Caddy Server is running" 200
 }
 ```
+---
 
-# ▶️ Step 3: Start the Server
+## ▶️ Step 3: Start the Server
 ```bash
 sudo caddy run --config /etc/caddy/Caddyfile --adapter caddyfile
 ```
 
-> ⚠️ Note: If port 443 is in use:
+> ⚠️ Note: If Caddy fails to start due to an existing admin endpoint:
+Check if something is already using port 2019 (Caddy's default admin port) or any other:
+
 ```bash
-sudo lsof -i :443
-sudo systemctl stop <service-name>
+sudo lsof -i :2019
+sudo systemctl stop caddy
 ```
+---
 
 ## 📡 Capturing Traffic on the Caddy Server (Optional Monitoring)
 To monitor incoming attack traffic on the server side (e.g., Oracle Cloud), you can capture QUIC packets using tshark.

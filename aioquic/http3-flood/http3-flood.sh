@@ -8,7 +8,7 @@
 
 while true
 do
-   #Internal Attack inside same machine
+   #Local Attack (not in cloud)
    #
    #seq 1 10 | xargs -n1 -P10 timeout 1s curl --insecure -X GET https://10.0.2.15:443/ -H "method: HEAD" -H "method: POST" -H "method: GET" -H "settings: 0" --data "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" --http3 -v -o /dev/null
    
